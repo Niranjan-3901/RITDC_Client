@@ -22,9 +22,9 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
   if (!student) return null;
   
   // Calculate total paid amount
-  const totalPaid = student.payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const totalPaid = student?.payments?.reduce((sum, payment) => sum + payment.amount, 0);
   // Calculate remaining amount
-  const remainingAmount = student.feeAmount - totalPaid;
+  const remainingAmount = student?.feeAmount - totalPaid;
 
   const formatDate = (dateString: string) => {
     try {
@@ -58,34 +58,34 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
           </View>
           
           <View style={styles.studentInfoContainer}>
-            <Text style={styles.studentName}>{student.student.firstName} {student.student.lastName}</Text>
+            <Text style={styles.studentName}>{student?.student?.firstName} {student?.student?.lastName}</Text>
             <Text style={styles.admissionInfo}>
-              {student.student.admissionNumber} • Admitted on: {formatDate(student.admissionDate)}
+              {student?.student?.admissionNumber} • Admitted on: {formatDate(student?.admissionDate)}
             </Text>
           </View>
           
           <View style={styles.feeOverview}>
             <View style={styles.feeItem}>
               <Text style={styles.feeLabel}>Total Fee</Text>
-              <Text style={styles.feeAmount}>₹{student.feeAmount.toLocaleString()}</Text>
+              <Text style={styles.feeAmount}>₹{student?.feeAmount?.toLocaleString()}</Text>
             </View>
             <View style={styles.feeItem}>
               <Text style={styles.feeLabel}>Paid</Text>
               <Text style={[styles.feeAmount, { color: colors.success }]}>
-                ₹{totalPaid.toLocaleString()}
+                ₹{totalPaid?.toLocaleString()}
               </Text>
             </View>
             <View style={styles.feeItem}>
               <Text style={styles.feeLabel}>Remaining</Text>
               <Text style={[styles.feeAmount, { color: remainingAmount > 0 ? colors.danger : colors.success }]}>
-                ₹{remainingAmount.toLocaleString()}
+                ₹{remainingAmount?.toLocaleString()}
               </Text>
             </View>
           </View>
           
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Payments</Text>
-            {student.payments.length > 0 ? (
+            {student?.payments?.length > 0 ? (
               <FlatList
                 data={[...student.payments].sort((a, b) => 
                   new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -98,10 +98,10 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                         {formatDate(item.date)}
                       </Text>
                       <Text style={styles.paymentMethod}>
-                        {item.method} {item.reference ? `• ${item.reference}` : ''}
+                        {item?.method} {item?.reference ? `• ${item?.reference}` : ''}
                       </Text>
                     </View>
-                    <Text style={styles.paymentAmount}>₹{item.amount.toLocaleString()}</Text>
+                    <Text style={styles.paymentAmount}>₹{item?.amount?.toLocaleString()}</Text>
                   </View>
                 )}
                 style={styles.list}
@@ -117,7 +117,7 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
           
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Notes</Text>
-            {student.notes.length > 0 ? (
+            {student?.notes?.length > 0 ? (
               <FlatList
                 data={[...student.notes].sort((a, b) => 
                   new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -126,9 +126,9 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                 renderItem={({ item }) => (
                   <View style={styles.noteItem}>
                     <Text style={styles.noteDate}>
-                      {formatDate(item.date)}
+                      {formatDate(item?.date)}
                     </Text>
-                    <Text style={styles.noteText}>{item.text}</Text>
+                    <Text style={styles.noteText}>{item?.text}</Text>
                   </View>
                 )}
                 style={styles.list}

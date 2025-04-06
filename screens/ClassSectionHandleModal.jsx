@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInpu
 import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../context/ThemeContext';
 import { fetchAllClassAndSectionsData } from "../redux/slices/globalSlice";
+import { showAlert, useAlert } from '../utils/Alert/AlertManager';
 import { addSectionInAClass, createClass, deleteClass, deleteSection, updateClass, updateSection } from '../services/apiService';
 
 
@@ -15,6 +16,7 @@ export const ChangeStudentClassModal = ({
     // onSave
 }) => {
     // Theme colors
+    const {showAlert} = useAlert()
     const theme = useTheme()
     const colors = getThemedColors(theme);
 
@@ -65,7 +67,7 @@ export const ChangeStudentClassModal = ({
     // Handle save
     const handleSave = () => {
         if (!selectedClass || !selectedSection) {
-            Alert.alert("Error", "Please select both a class and section");
+            showAlert({title: "Error", message:"Please select both a class and section"});
             return;
         }
 
@@ -256,7 +258,7 @@ export const ClassSectionCreationModal = ({
     // Handle save class
     const handleSaveClass = async () => {
         if (!className.trim()) {
-            Alert.alert("Error", "Please enter a class name");
+            showAlert({title: "Error", message:"Please enter a class name"});
             return;
         }
         setIsLoading(true);
@@ -264,17 +266,19 @@ export const ClassSectionCreationModal = ({
             try {
                 const res = await updateClass(classToDelete, { name: className });
                 if (res.success) {
-                    Alert.alert("Success", "Class updated successfully");
+                    showAlert({title: "Success", message:"Class updated successfully"});
                     setIsEditing(false);
                     setClassToDelete(null);
                     setClassName('');
                     dispatch(fetchAllClassAndSectionsData());
                 }
                 else {
-                    Alert.alert("Error", "Failed to update class: " + res.message);
+                    // Alert.alert("Error", "Failed to update class: " + res.message);
+                    showAlert({title: "Error", message:`Failed to update class: ${res.message}`});
                 }
             } catch (e) {
-                Alert.alert("Error", "Failed to update class: " + e.message);
+                // Alert.alert("Error", "Failed to update class: " + e.message);
+                showAlert({title: "Error", message:`Failed to update class: ${e.message}`});
             }
             finally {
                 setIsLoading(false);
@@ -283,16 +287,19 @@ export const ClassSectionCreationModal = ({
             try {
                 const res = await createClass(className);
                 if (res.success) {
-                    Alert.alert("Success", "Class created successfully");
+                    // Alert.alert("Success", "Class created successfully");
+                    showAlert({title: "Success", message:`Class created successfully`});
                     setClassName('');
                     dispatch(fetchAllClassAndSectionsData());
                 }
                 else {
-                    Alert.alert("Error", "Failed to create class: " + res.message);
+                    // Alert.alert("Error", "Failed to create class: " + res.message);
+                    showAlert({title: "Error", message:`Failed to create class: ${res.message}`});
                 }
             }
             catch (e) {
-                Alert.alert("Error", "Failed to create class: " + e.message);
+                // Alert.alert("Error", "Failed to create class: " + e.message);
+                showAlert({title: "Error", message:`Failed to create class: ${res.message}`});
             }
             finally {
                 setIsLoading(false);
@@ -305,12 +312,14 @@ export const ClassSectionCreationModal = ({
         const validSections = sections.filter(section => section.value.trim() !== '');
 
         if (validSections.length === 0) {
-            Alert.alert("Error", "Please enter at least one section name");
+            // Alert.alert("Error", "Please enter at least one section name");
+            showAlert({title: "Error", message:`Please enter at least one section name`});
             return;
         }
 
         if (!selectedClass) {
-            Alert.alert("Error", "Please select a class");
+            // Alert.alert("Error", "Please select a class");
+            showAlert({title: "Error", message:`Please select a class`});
             return;
         }
         setIsLoading(true);
@@ -318,16 +327,19 @@ export const ClassSectionCreationModal = ({
             try {
                 const res = await updateSection(sectionToDelete, { name: sections[0].value });
                 if (res.success) {
-                    Alert.alert("Success", "Section updated successfully");
+                    // Alert.alert("Success", "Section updated successfully");
+                    showAlert({title: "Success", message:`Section updated successfully`});
                     setIsEditing(false);
                     setSectionToDelete(null);
                 }
                 else {
-                    Alert.alert("Error", "Failed to update section: " + res.message);
+                    // Alert.alert("Error", "Failed to update section: " + res.message);
+                    showAlert({title: "Error", message:`Failed to update section: ${res.message}`});
                 }
             }
             catch (e) {
-                Alert.alert("Error", "Failed to update section: " + e.message);
+                // Alert.alert("Error", "Failed to update section: " + e.message);
+                showAlert({title: "Error", message:`Failed to update section: ${e.message}`});
             }
             finally {
                 setIsLoading(false);
@@ -336,13 +348,16 @@ export const ClassSectionCreationModal = ({
             try {
                 const res = await addSectionInAClass(selectedClass, { sections: validSections.map(section => section.value) });
                 if (res.success) {
-                    Alert.alert("Success", "Sections created successfully");
+                    // Alert.alert("Success", "Sections created successfully");
+                    showAlert({title: "Success", message:`Sections created successfully`});
                 }
                 else {
-                    Alert.alert("Error", "Failed to create sections: " + res.message);
+                    // Alert.alert("Error", "Failed to create sections: " + res.message);
+                    showAlert({title: "Error", message:`Failed to create sections: ${res.message}`});
                 }
             } catch (error) {
-                Alert.alert("Error", "Failed to create sections: " + error.message);
+                // Alert.alert("Error", "Failed to create sections: " + error.message);
+                showAlert({title: "Error", message:`Failed to create sections: ${error.message}`});
             }
             finally {
                 setIsLoading(false);
@@ -382,13 +397,16 @@ export const ClassSectionCreationModal = ({
             // This would need a proper API call to delete the class
             const res = await deleteClass(classId);
             if (res.success) {
-                Alert.alert("Success", "Class deleted successfully");
+                // Alert.alert("Success", "Class deleted successfully");
+                showAlert({title: "Success", message:`Class deleted successfully`});
                 dispatch(fetchAllClassAndSectionsData());
             } else {
-                Alert.alert("Error", res.message);
+                // Alert.alert("Error", res.message);
+                showAlert({title: "Error", message:res.message});
             }
         } catch (error) {
-            Alert.alert("Error", "Failed to delete class: " + error.message);
+            // Alert.alert("Error", "Failed to delete class: " + error.message);
+            showAlert({title: "Error", message:`Failed to delete class: ${error.message}`});
         }
         finally {
             setDeleteStateLoader(false);
@@ -425,13 +443,16 @@ export const ClassSectionCreationModal = ({
             // This would need a proper API call to delete the section
             const res = await deleteSection(sectionId);
             if (res.success) {
-                Alert.alert("Success", "Section deleted successfully");
+                // Alert.alert("Success", "Section deleted successfully");
+                showAlert({title: "Success", message:`Section deleted successfully`})
                 dispatch(fetchAllClassAndSectionsData());
             } else {
-                Alert.alert("Error", res.message);
+                // Alert.alert("Error", res.message);
+                showAlert({title: "Error", message: res.message});
             }
         } catch (error) {
-            Alert.alert("Error", "Failed to delete section: " + error.message);
+            // Alert.alert("Error", "Failed to delete section: " + error.message);
+            showAlert({title: "Error", message:`Failed to delete section: ${error.message}`});
         }
         finally {
             setDeleteStateLoader(false);

@@ -4,6 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { createFeeRecord } from '../services/apiService';
 
 const getThemedColors = (theme) => ({
     background: theme === "dark" ? "#121212" : "#F5F7FA",
@@ -26,7 +27,7 @@ const getThemedColors = (theme) => ({
  * @param {boolean} props.visible - Determines if the modal is visible.
  * @param {Function} props.onClose - Function to close the modal.
  * @param {Object} props.studentData - Student details.
- * @param {string} props.studentData._id - Unique ID of the student.
+ * @param {string} props.studentData.id - Unique ID of the student.
  * @param {string} props.studentData.name - Full name of the student.
  * @param {string} props.studentData.class - Student's current class.
  * @param {string} props.studentData.section - Student's section.
@@ -103,13 +104,44 @@ const FeeRecordModal = ({ visible, onClose, studentData }) => {
     };
 
     // Handle save
-    const handleSave = () => {
-        // Here you would save to MongoDB using your API
-        console.log('Saving fee record:', {
-            ...feeData,
-            student: studentData._id,
-            admissionDate: studentData.admissionDate
-        });
+    const handleSave = async () => {
+        try{
+            // Validate form data
+            if (!feeData.feeAmount || feeData.feeAmount <= 0) {
+                throw new Error('Fee amount must be a positive number');
+            }
+
+            if (!feeData.payment.date ||!feeData.payment.amount || feeData.payment.amount <= 0 || feeData.payment.method === '') {
+                throw new Error('Payment details are required');
+            }
+
+            console.log("Student Id: ",studentData.id,"\nFeeData: ",JSON.stringify(feeData, null,2))
+            // Create fee record
+            // await createFeeRecord(feeData, studentData.id);
+
+            // Reset form
+            // setFeeData({
+            //     serialNumber: `FEE-${Date.now().toString().slice(-6)}`,
+            //     feeAmount: '',
+            //     status: 'unpaid',
+            //     nextPaymentDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split("T")[0],
+            //     dueDate: new Date(new Date().setDate(new Date().getDate() + 45)).toISOString().split("T")[0],
+            //     academicYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+            //     term: 'Term 1',
+            //     payment: {
+            //         date: new Date().toISOString().split('T')[0],
+            //         amount: '',
+            //         method: 'cash',
+            //         reference: ''
+            //     },
+            //     note: {
+            //         date: new Date().toISOString().split('T')[0],
+            //         text: ''
+            //     }
+            // });
+        }catch(e){
+            console.log('Error saving fee record:', e);
+        }
         onClose();
     };
 

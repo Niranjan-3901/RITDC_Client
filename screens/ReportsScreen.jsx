@@ -18,8 +18,10 @@ import {
     generateResultReport,
     generateStudentReport
 } from '../services/reportService';
+import { useAlert } from '../utils/Alert/AlertManager';
 
 export default function ReportsScreen({ navigation }) {
+  const {showAlert} = useAlert();
   const [loading, setLoading] = useState(false);
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('');
@@ -144,7 +146,8 @@ export default function ReportsScreen({ navigation }) {
       await shareReport(reportData);
     } catch (error) {
       console.error('Report generation failed:', error);
-      alert('Failed to generate report');
+      // alert('Failed to generate report');
+      showAlert({title: "Error", message: "Failed to generate report."})
     } finally {
       setLoading(false);
       setExportModalVisible(false);
@@ -169,7 +172,8 @@ export default function ReportsScreen({ navigation }) {
         // dismissed
       }
     } catch (error) {
-      alert(error.message);
+      // alert(error.message);
+      showAlert({title: "Error", message: error.message});
     }
   };
 

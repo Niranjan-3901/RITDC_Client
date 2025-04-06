@@ -79,21 +79,6 @@ export default function LoginScreen() {
     return isValid;
   };
 
-  const fakeLoginAPI = async (email: string, password: string) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email === "test@example.com" && password === "password") {
-          resolve({
-            user: { name: "Test User", email },
-            token: "fake-jwt-token",
-          });
-        } else {
-          reject(new Error("Invalid credentials"));
-        }
-      }, 1000);
-    });
-  };
-
   const handleLogin = async () => {
     dispatch(loginStart());
     if (validateForm()) {

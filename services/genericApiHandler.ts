@@ -5,7 +5,7 @@ import ENV from '../config/Env';
 const cancelToken = axios.CancelToken.source();
 
 const api = axios.create({
-  baseURL: ENV.SERVER_BASE_URL
+  baseURL: process.env.NODE_ENV === 'development' ? ENV.LOCAL_SERVER_BASE_URL : ENV.PROD_SERVER_BASE_URL
 })
 
 api.interceptors.request.use((config) => {
@@ -20,10 +20,9 @@ export const cancelRequests = () => {
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('token');
-    // console.log("🔑 Attaching Token:", token);
 
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`; // ✅ Attach token to the request
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
 
     return config;
@@ -79,7 +78,7 @@ const apiRequest = async (
     const response = await api.request(config);
     return response;
   } catch (error: any) {
-    console.error("❌ API Request Error:", error?.response?.data || error.message);
+    console.error(`❌ API Request Error for route ${endpoint}:`, error?.response?.data || error.message);
     throw error?.response?.data || { message: 'API request failed' };
   }
 };

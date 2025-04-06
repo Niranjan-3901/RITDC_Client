@@ -92,7 +92,6 @@ export default function RegisterScreen() {
     dispatch(loginStart());
     if (validateForm()) {
       try {
-        // const response:any = await fakeRegisterAPI(name, email, password);
         const response = await registerUser({name: name, email: email, password: password});
         console.log('Register Response:',JSON.stringify(response, null, 2));
         dispatch(loginSuccess(response));
@@ -102,18 +101,6 @@ export default function RegisterScreen() {
       }
     }
   };
-
-  // const fakeRegisterAPI = async (name: string, email: string, password: string) => {
-  //   return new Promise((resolve, reject) => {
-  //     setTimeout(() => {
-  //       if (email !== 'test@example.com') {
-  //         resolve({ user: { name, email }, token: 'fake-jwt-token' });
-  //       } else {
-  //         reject(new Error('Email already exists'));
-  //       }
-  //     }, 1000);
-  //   });
-  // };
 
   return (
     <KeyboardAvoidingView

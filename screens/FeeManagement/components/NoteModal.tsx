@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput } from 'reac
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { format } from 'date-fns';
 import { Student, StudentNote } from '../types';
+import { useAlert } from '../../../utils/Alert/AlertManager';
 
 interface NoteModalProps {
   visible: boolean;
@@ -22,10 +23,13 @@ const NoteModal: React.FC<NoteModalProps> = ({
   const styles = createStyles(colors);
   
   const [noteText, setNoteText] = useState('');
+  // const [submittingState, setSubmittingState] = useState(false);
   
   const handleSubmit = () => {
     if (!noteText.trim()) {
-      alert('Please enter a note');
+      // alert('Please enter a note');
+      useAlert().showAlert({title:'Error', message:'Please enter a note'});
+      
       return;
     }
     
@@ -57,8 +61,8 @@ const NoteModal: React.FC<NoteModalProps> = ({
           </View>
           
           <View style={styles.formContainer}>
-            <Text style={styles.studentName}>{student.student.firstName} {student.student.lastName}</Text>
-            <Text style={styles.admissionNumber}>{student.student.admissionNumber}</Text>
+            <Text style={styles.studentName}>{student?.student?.firstName} {student?.student?.lastName}</Text>
+            <Text style={styles.admissionNumber}>{student?.student?.admissionNumber}</Text>
             
             <View style={styles.inputContainer}>
               <Text style={styles.fieldLabel}>Note</Text>

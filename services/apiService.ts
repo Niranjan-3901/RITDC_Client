@@ -61,9 +61,17 @@ export const registerUser = async (body: any) => {
 export const getStudents = async (
   page: number = 1,
   limit: number = 20,
-  filters = {}
+  classFilter: string = "",
+  sectionFilter: string = ""
 ) => {
-  return await apiRequest(`/students/get?page=${page}&limit=${limit}`, "GET");
+  let url = `/students/get?page=${page}&limit=${limit}`;
+  if (classFilter) {
+    url += `&classFilter=${classFilter}`;
+  }
+  if (sectionFilter) {
+    url += `&sectionFilter=${sectionFilter}`;
+  }
+  return await apiRequest(url, "GET");
 };
 
 export const getStudentDetailsById = async (id: string) => {
@@ -221,29 +229,35 @@ export interface FeeNote {
 export type FilterType = "all" | "paid" | "unpaid" | "partial" | "overdue";
 
 // Fee Module API functions
-export const fetchAllFeeRecords = async () => {
-  return await apiRequest("/fees", "GET");
+export const fetchFeeRecords = async (
+  page: number = 1,
+  limit: number = 20,
+  classFilter: string = "",
+  sectionFilter: string = ""
+) => {
+  let url = `/fees?page=${page}&limit=${limit}`
+  if (classFilter) {
+    url += `&classFilter=${classFilter}`;
+  }
+  if (sectionFilter) {
+    url += `&sectionFilter=${sectionFilter}`;
+  }
+  return await apiRequest(url, "GET");
 };
 
-export const fetchFeeRecordsByStatus = async (status: FilterType) => {
+export const fetchFeeRecordsByStatus = async (status: FilterType, page:number, limit:number) => {
   if (status === "all") {
-    return await apiRequest("/fees", "GET");
+    return await apiRequest(`/fees?page=${page}&limit=${limit}`, "GET");
   }
-  return await apiRequest(`/fees/filter/${status}`, "GET");
+  return await apiRequest(`/fees/filter/${status}?page=${page}&limit=${limit}`, "GET");
 };
 
 export const fetchStudentFeeRecords = async (studentId: string) => {
   return await apiRequest(`/fees/student/${studentId}`, "GET");
 };
 
-export const createFeeRecord = async (feeRecord: {
-  studentId: string;
-  serialNumber: string;
-  feeAmount: number;
-  academicYear: string;
-  term: string;
-}) => {
-  return await apiRequest("/fees", "POST", feeRecord);
+export const createFeeRecord = async (feeRecord: Object, studentId: String) => {
+  return await apiRequest("/fees", "POST", {feeRecord, studentId});
 };
 
 export const addPayment = async (feeRecordId: string, payment: Payment) => {
@@ -255,7 +269,6 @@ export const addNote = async (feeRecordId: string, note: FeeNote) => {
 };
 
 export const importFeeRecordsFromExcel = async (data: any[]) => {
-  // Process the Excel data to match our schema
   const processedRecords = data.map((row, index) => {
     let admissionDate;
     try {

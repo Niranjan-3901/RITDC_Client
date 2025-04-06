@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Payment, Student } from '../types';
+import { useAlert } from '../../../utils/Alert/AlertManager';
 
 interface PaymentFormModalProps {
   visible: boolean;
@@ -22,6 +23,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
 }) => {
   const styles = createStyles(colors);
   
+  
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('Cash');
   const [reference, setReference] = useState('');
@@ -29,12 +31,13 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
   
   // Calculate remaining amount
-  const totalPaid = student?.payments.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+  const totalPaid = student?.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
   const remainingAmount = student ? student.feeAmount - totalPaid : 0;
   
   const handleSubmit = () => {
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      alert('Please enter a valid amount');
+      // alert('Please enter a valid amount');
+      useAlert().showAlert({title: "Error", message: "Please enter a valid amount"})
       return;
     }
     
@@ -82,24 +85,24 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
           </View>
           
           <ScrollView style={styles.formContainer}>
-            <Text style={styles.studentName}>{student.student.firstName} {student.student.lastName}</Text>
-            <Text style={styles.admissionNumber}>{student.student.admissionNumber}</Text>
+            <Text style={styles.studentName}>{student?.student?.firstName} {student?.student?.lastName}</Text>
+            <Text style={styles.admissionNumber}>{student?.student?.admissionNumber}</Text>
             
             <View style={styles.amountContainer}>
               <Text style={styles.fieldLabel}>Fee Details</Text>
               <View style={styles.feeDetails}>
                 <View style={styles.feeItem}>
                   <Text style={styles.feeLabel}>Total Fee</Text>
-                  <Text style={styles.feeValue}>₹{student.feeAmount.toLocaleString()}</Text>
+                  <Text style={styles.feeValue}>₹{student?.feeAmount?.toLocaleString()}</Text>
                 </View>
                 <View style={styles.feeItem}>
                   <Text style={styles.feeLabel}>Paid</Text>
-                  <Text style={styles.feeValue}>₹{totalPaid.toLocaleString()}</Text>
+                  <Text style={styles.feeValue}>₹{totalPaid?.toLocaleString()}</Text>
                 </View>
                 <View style={styles.feeItem}>
                   <Text style={styles.feeLabel}>Remaining</Text>
                   <Text style={[styles.feeValue, { color: remainingAmount > 0 ? colors.danger : colors.success }]}>
-                    ₹{remainingAmount.toLocaleString()}
+                    ₹{remainingAmount?.toLocaleString()}
                   </Text>
                 </View>
               </View>
@@ -117,7 +120,7 @@ const PaymentFormModal: React.FC<PaymentFormModalProps> = ({
               />
               <TouchableOpacity 
                 style={styles.fullAmountButton} 
-                onPress={() => setAmount(remainingAmount.toString())}
+                onPress={() => setAmount(remainingAmount?.toString())}
               >
                 <Text style={styles.fullAmountText}>Fill Remaining (₹{remainingAmount})</Text>
               </TouchableOpacity>

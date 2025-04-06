@@ -14,10 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
+import Pagination from "../components/Pagination";
 import AddStudentModal from "../components/AddStudentModal";
 import { useTheme } from "../context/ThemeContext";
-
 import {
   createStudent,
   getStudents,
@@ -25,6 +24,8 @@ import {
 } from "../services/apiService";
 import { ClassSectionCreationModal } from "./ClassSectionHandleModal";
 import StudentDetailsModal from "./StudentDetailsModal";
+import Loader from "./FeeManagement/components/Loader";
+import { useAlert } from "../utils/Alert/AlertManager";
 
 interface Student {
   _id: string;
@@ -45,11 +46,19 @@ interface Student {
   notes?: string;
 }
 
+interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
 type RootStackParamList = {
   StudentDetails: { studentId: string };
 };
 
 export default function StudentsScreen() {
+  const {showAlert} = useAlert();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,11 +70,17 @@ export default function StudentsScreen() {
   const [sectionFilter, setSectionFilter] = useState("");
   const [showStudentDetail, setShowStudentDetail] = useState(false);
   const [showAddClassModal, setShowAddClassModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(
-    null
-  );
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta>({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  });
+
   const [editingUser, setEditingUser] = useState<{
     editMode: boolean;
     editableStudentData: Student | null;
@@ -91,34 +106,74 @@ export default function StudentsScreen() {
     danger: "#F44336",
   };
 
-  const fetchStudents = async (classFilter = "", sectionFilter = "") => {
+  const fetchStudents = async (
+    page = paginationMeta.currentPage,
+    limit = paginationMeta.itemsPerPage,
+    applySearch = true
+  ) => {
     try {
-      const studentData: any = await getStudents();
+      setLoading(true);
+      const studentData: any = await getStudents(
+        page,
+        limit,
+        classFilter,
+        sectionFilter
+      );
       setStudents(studentData.data);
-      setFilteredStudents(studentData.data);
+      if (applySearch && searchQuery) {
+        const filtered = studentData.data.filter(
+          (student: Student) =>
+            student.firstName
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            student.admissionNumber
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            student.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredStudents(filtered);
+      } else {
+        setFilteredStudents(studentData.data);
+      }
+
+      setPaginationMeta({
+        currentPage: studentData?.pagination?.currentPage,
+        totalPages: studentData?.pagination?.totalPages,
+        totalItems: studentData?.pagination?.totalItems,
+        itemsPerPage: studentData?.pagination?.itemsPerPage,
+      });
     } catch (error) {
       console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchStudents(classFilter, sectionFilter);
+    await fetchStudents(paginationMeta.currentPage, paginationMeta.itemsPerPage, true);
     setRefreshing(false);
   };
 
+  const handlePageChange = (page: number) => {
+    fetchStudents(page, paginationMeta.itemsPerPage, true);
+  };
+
+  const handleItemsPerPageChange = (newLimit: number) => {
+    fetchStudents(1, newLimit, true);
+  };
+
   useEffect(() => {
-    setLoading(true);
-    fetchStudents();
-    setLoading(false);
+    fetchStudents(1, paginationMeta.itemsPerPage, false);
   }, []);
 
   useEffect(() => {
-    // Apply filters when search query, class or section changes
-    let results = students;
+    fetchStudents(1, paginationMeta.itemsPerPage, true);
+  }, [classFilter, sectionFilter]);
 
+  useEffect(() => {
     if (searchQuery) {
-      results = results.filter(
+      const filtered = students.filter(
         (student) =>
           student.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           student.admissionNumber
@@ -126,18 +181,11 @@ export default function StudentsScreen() {
             .includes(searchQuery.toLowerCase()) ||
           student.email?.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      setFilteredStudents(filtered);
+    } else {
+      setFilteredStudents(students);
     }
-
-    if (classFilter) {
-      results = results.filter((student) => student.class === classFilter);
-    }
-
-    if (sectionFilter) {
-      results = results.filter((student) => student.section === sectionFilter);
-    }
-
-    setFilteredStudents(results);
-  }, [searchQuery, classFilter, sectionFilter, students]);
+  }, [searchQuery, students]);
 
   const handleImportStudents = async () => {
     // This would open a file picker in a real app
@@ -165,7 +213,9 @@ export default function StudentsScreen() {
       await fetchStudents();
     } catch (err) {
       console.error("Error adding student:", err);
-      alert("Failed to add student. Please try again later.");
+      // alert("Failed to add student. Please try again later.");
+      showAlert({title: "Error", message: "Failed to add student. Please try again later."})
+      
     } finally {
       setLoading(false);
       setIsAddModalVisible(false);
@@ -369,10 +419,23 @@ export default function StudentsScreen() {
             <Text
               style={[styles.studentCount, { color: colors.textSecondary }]}
             >
-              Total: {filteredStudents.length}
+              Total: {paginationMeta.totalItems}
             </Text>
           </View>
           <View style={styles.headerButtons}>
+            <TouchableOpacity 
+            style={[
+                styles.iconButton,
+                { backgroundColor: colors.cardBackground },
+              ]}
+              onPress={()=>fetchStudents(paginationMeta.currentPage, paginationMeta.itemsPerPage, true)}
+              >
+              <Ionicons
+                name="reload"
+                size={22}
+                color={colors.textPrimary}
+              />
+            </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.iconButton,
@@ -595,7 +658,7 @@ export default function StudentsScreen() {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.accent} />
+            <Loader colors={colors} message="Fetching Students..." />
           </View>
         ) : filteredStudents.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -630,7 +693,7 @@ export default function StudentsScreen() {
               setSelectedStudent(null);
             }}
             studentId={selectedStudent?._id}
-            onEditPressed = {()=>{
+            onEditPressed={() => {
               setIsAddModalVisible(true);
               setEditingUser({
                 editMode: true,
@@ -643,6 +706,18 @@ export default function StudentsScreen() {
                   }),
               });
             }}
+          />
+        )}
+
+        {filteredStudents.length > 0 && (
+          <Pagination
+            currentPage={paginationMeta.currentPage}
+            totalPages={paginationMeta.totalPages}
+            onPageChange={handlePageChange}
+            itemsPerPage={paginationMeta.itemsPerPage}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            totalItems={paginationMeta.totalItems}
+            theme={theme === "dark" ? "dark" : "light"}
           />
         )}
 
