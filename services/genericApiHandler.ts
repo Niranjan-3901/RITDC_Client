@@ -5,8 +5,12 @@ import ENV from '../config/Env';
 const cancelToken = axios.CancelToken.source();
 
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'development' ? ENV.LOCAL_SERVER_BASE_URL : ENV.PROD_SERVER_BASE_URL
-})
+  baseURL: ENV.PROD_SERVER_BASE_URL
+});
+
+// const api = axios.create({
+//   baseURL: ENV.LOCAL_SERVER_BASE_URL
+// });
 
 api.interceptors.request.use((config) => {
   config.cancelToken = cancelToken.token;
