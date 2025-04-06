@@ -1,12 +1,14 @@
 {
   "expo": {
     "name": "a0-project",
-    "slug": "snack-9ada9c1a-90d0-4281-ae39-f35251c282d3",
+    "slug": "ritdc-management",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "assetBundlePatterns": ["**/*"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -19,11 +21,18 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.kinslayer.ritdcmanagement"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "description": "Quickly generate React Native components with AI"
+    "description": "Quickly generate React Native components with AI",
+    "extra": {
+      "eas": {
+        "projectId": "532d9b65-5bb7-43bb-bb35-9b1db108874a"
+      }
+    },
+    "owner": "kinslayer"
   }
 }

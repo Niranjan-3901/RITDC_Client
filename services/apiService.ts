@@ -272,19 +272,20 @@ export const importFeeRecordsFromExcel = async (data: any[]) => {
   const processedRecords = data.map((row, index) => {
     let admissionDate;
     try {
-      if (typeof row["Admission Date"] === "number") {
+      if (row["Admission Date"] instanceof Date) {
+        admissionDate = row["Admission Date"];
+      } else if (typeof row["Admission Date"] === "number") {
         const excelEpoch = new Date(1899, 11, 30);
         const millisecondsPerDay = 24 * 60 * 60 * 1000;
         admissionDate = new Date(
           excelEpoch.getTime() + row["Admission Date"] * millisecondsPerDay
         );
-      } else {
-        const [month, day, year] = (row["Admission Date"] || "").split("/");
-        admissionDate = new Date(
-          parseInt(year),
-          parseInt(month) - 1,
-          parseInt(day)
-        );
+      }
+      else if (typeof row["Admission Date"] === "string") {
+        admissionDate = new Date(row["Admission Date"]);
+      }
+      else {
+        throw new Error(`Invalid date format at row ${index + 1}`);
       }
 
       // Validate the date
@@ -332,6 +333,7 @@ export const importFeeRecordsFromExcel = async (data: any[]) => {
 
   return await apiRequest("/fees/import", "POST", processedRecords);
 };
+
 
 export const getClassFeeReport = async (
   classId: string,

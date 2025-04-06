@@ -1,81 +1,98 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import ENV from '../config/Env';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { LOCAL_SERVER_BASE_URL, PROD_SERVER_BASE_URL } from "@env";
 
-const cancelToken = axios.CancelToken.source();
-
+// Create axios instance
 const api = axios.create({
-  baseURL: ENV.PROD_SERVER_BASE_URL
+  baseURL: PROD_SERVER_BASE_URL,
 });
-
 // const api = axios.create({
-//   baseURL: ENV.LOCAL_SERVER_BASE_URL
+//   baseURL: PROD_SERVER_BASE_URL,
 // });
 
-api.interceptors.request.use((config) => {
-  config.cancelToken = cancelToken.token;
-  return config;
-});
+// Cancel token handling
+let cancelTokenSource = axios.CancelToken.source();
 
-export const cancelRequests = () => {
-  cancelToken.cancel('Request canceled due to unmount');
+const refreshCancelToken = () => {
+  if (!cancelTokenSource || cancelTokenSource.token.reason) {
+    cancelTokenSource = axios.CancelToken.source();
+  }
 };
 
+// Function to cancel requests when needed
+const cancelRequests = () => {
+  if (cancelTokenSource) {
+    cancelTokenSource.cancel("Request canceled due to unmount");
+  }
+  refreshCancelToken();
+};
+
+// Request Interceptor
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem('token');
+    try {
+      if (!config.headers.Authorization) {
+        const token = await AsyncStorage.getItem("token");
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${token}`;
+        }
+      }
 
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      if (!config.cancelToken) {
+        config.cancelToken = cancelTokenSource.token;
+      }
+
+      return config;
+    } catch (error) {
+      console.error("Error in request interceptor:", error);
+      return Promise.reject(error);
     }
-
-    return config;
   },
   (error) => Promise.reject(error)
 );
 
-
-// Add Response Interceptor for Handling Errors
+// Response Interceptor
 api.interceptors.response.use(
   (response) => {
     if (!response.data) {
-      throw new Error(response.data.message || 'API request failed');
+      throw new Error(response.data.message || "API request failed");
     }
     return response.data;
   },
   async (error) => {
     if (error.response?.status === 401) {
-      console.warn('Unauthorized! Logging out...');
-      await AsyncStorage.removeItem('token');
+      console.warn("Unauthorized! Logging out...");
+      await AsyncStorage.removeItem("token");
     }
     return Promise.reject(error);
   }
 );
 
-
+// API Request Function
 const apiRequest = async (
   endpoint: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
   body: any = null,
-  contentType: string = 'application/json'
+  contentType: string = "application/json"
 ): Promise<any> => {
   try {
-    const token = await AsyncStorage.getItem('token'); // ✅ Retrieve token inside request
-    // console.log("🔑 Token at Request:", token);
+    refreshCancelToken();
+
+    const token = await AsyncStorage.getItem("token");
 
     const headers: Record<string, string> = {
-      'Content-Type': contentType,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}), // ✅ Ensure token is attached
+      "Content-Type": contentType,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
     const config: any = {
       method,
       url: endpoint,
       headers,
-      cancelToken: cancelToken.token,
+      cancelToken: cancelTokenSource.token,
     };
 
-    if (body && method !== 'GET') {
+    if (body && method !== "GET") {
       config.data = body;
     }
 
@@ -83,10 +100,9 @@ const apiRequest = async (
     return response;
   } catch (error: any) {
     console.error(`❌ API Request Error for route ${endpoint}:`, error?.response?.data || error.message);
-    throw error?.response?.data || { message: 'API request failed' };
+    throw error?.response?.data || { message: "API request failed" };
   }
 };
 
-
-export { apiRequest };
+export { apiRequest, cancelRequests };
 export default api;

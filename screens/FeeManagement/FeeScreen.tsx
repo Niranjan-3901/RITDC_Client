@@ -1,11 +1,11 @@
 import { format } from "date-fns";
+import ExcelJS from "exceljs";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   FlatList,
   Platform,
   RefreshControl,
@@ -16,7 +16,6 @@ import {
   View,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import * as XLSX from "xlsx";
 import Pagination from "../../components/Pagination";
 import { useTheme } from "../../context/ThemeContext";
 import {
@@ -26,6 +25,7 @@ import {
   importFeeRecordsFromExcel,
 } from "../../services/apiService";
 
+import { Buffer } from "buffer";
 import EmptyState from "./components/EmptyState";
 import FeeFilters from "./components/FeeFilters";
 import Loader from "./components/Loader";
@@ -118,7 +118,7 @@ const FeeManagementScreen = () => {
     } catch (error) {
       // console.error("Error fetching fee records:", error);
       // Alert.alert("Error", "Failed to load fee records.");
-      showAlert({title: "Error", message: "Failed to load fee records"});
+      showAlert({ title: "Error", message: "Failed to load fee records" });
     } finally {
       setIsLoading(false);
     }
@@ -206,11 +206,23 @@ const FeeManagementScreen = () => {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, {
         encoding: FileSystem.EncodingType.Base64,
       });
+      const buffer = Buffer.from(fileContent, "base64");
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    const worksheet = workbook.worksheets[0];
 
-      const workbook = XLSX.read(fileContent, { type: "base64" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    // Convert worksheet data to JSON
+      const jsonData: any = [];
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      const rowData: Record<string, any> = {};
+      row.eachCell((cell, colNumber) => {
+        const header = worksheet.getRow(1).getCell(colNumber).value;
+        rowData[String(header)] = cell.value;
+      });
+      jsonData.push(rowData);
+    });
+
       const studentRecord = await importFeeRecordsFromExcel(jsonData);
       let processedStudents = studentRecord?.data?.feeRecords;
       setStudents(processedStudents);
@@ -229,7 +241,7 @@ const FeeManagementScreen = () => {
       //   studentRecord?.message,
       //   [{ text: "OK" }]
       // );
-      showAlert({title: "Success", message: studentRecord?.message});
+      showAlert({ title: "Success", message: studentRecord?.message });
     } catch (error) {
       setIsProcessing(false);
       console.error("Error uploading file:", error);
@@ -238,7 +250,11 @@ const FeeManagementScreen = () => {
       //   "Failed to process the Excel file. Please check the format and try again.",
       //   [{ text: "OK" }]
       // );
-      showAlert({title: "Error", message: "Failed to process the Excel file. Please check the format and try again."});
+      showAlert({
+        title: "Error",
+        message:
+          "Failed to process the Excel file. Please check the format and try again.",
+      });
     }
   };
 
@@ -260,7 +276,10 @@ const FeeManagementScreen = () => {
       setSelectedStudent(updatedStudent);
 
       // Alert.alert("Success", "Payment recorded successfully.");
-      showAlert({ title: "Success", message: "Payment recorded successfully." });
+      showAlert({
+        title: "Success",
+        message: "Payment recorded successfully.",
+      });
     } catch (error) {
       // console.error("Error recording payment:", error);
       // Alert.alert("Error", "Failed to record payment.");
@@ -280,7 +299,9 @@ const FeeManagementScreen = () => {
       const updatedStudent = await addNote(selectedStudent._id!, note);
 
       const updatedStudents = students.map((student) =>
-        student._id === updatedStudent?.data?._id ? updatedStudent?.data : student
+        student._id === updatedStudent?.data?._id
+          ? updatedStudent?.data
+          : student
       );
 
       setStudents(updatedStudents);
@@ -449,7 +470,7 @@ const FeeManagementScreen = () => {
       setIsLoading(false);
       // console.error("Error generating PDF:", error);
       // Alert.alert("Error", "Failed to generate PDF.");
-      showAlert({title: "Error", message:"Failed to generate PDF."})
+      showAlert({ title: "Error", message: "Failed to generate PDF." });
     }
   }, []);
 
