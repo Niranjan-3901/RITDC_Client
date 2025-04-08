@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "a0-project",
+    "name": "Rudra ITDC",
     "slug": "ritdc-management",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -31,7 +31,9 @@
     "extra": {
       "eas": {
         "projectId": "532d9b65-5bb7-43bb-bb35-9b1db108874a"
-      }
+      },
+      "PROD_SERVER_BASE_URL": "https://ritdc-server.onrender.com/",
+      "LOCAL_SERVER_BASE_URL": "http://192.168.1.5:5000"
     },
     "owner": "kinslayer"
   }

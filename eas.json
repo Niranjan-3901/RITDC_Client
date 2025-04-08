@@ -6,17 +6,20 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "LOCAL_SERVER_BASE_URL": "http://192.168.1.5:5000",
+        "PROD_SERVER_BASE_URL": "https://ritdc-server.onrender.com/"
+      }
     },
     "preview": {
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
-    },
-    "production-apk": {
-      "android": {
-        "artifact": "apk"
+      "autoIncrement": true,
+      "env": {
+        "PROD_SERVER_BASE_URL": "https://ritdc-server.onrender.com/",
+        "LOCAL_SERVER_BASE_URL": "http://192.168.1.5:5000"
       }
     }
   },

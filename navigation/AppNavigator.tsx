@@ -192,6 +192,7 @@ export default function AppNavigator() {
 
   const colors = {
     background: theme === "dark" ? "#121212" : "#F5F7FA",
+    primary: "#4A6FFF"
   };
 
   if (loading) {
@@ -199,10 +200,10 @@ export default function AppNavigator() {
       <View
         style={[
           styles.loadingContainer,
-          { backgroundColor: colors.background },
+          { backgroundColor: colors.background},
         ]}
       >
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text>Loading...</Text>
       </View>
     );

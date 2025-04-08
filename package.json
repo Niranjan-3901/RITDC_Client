@@ -46,7 +46,8 @@
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^3.1.0",
-    "sonner-native": "latest"
+    "sonner-native": "latest",
+    "expo-dev-client": "~5.0.19"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
