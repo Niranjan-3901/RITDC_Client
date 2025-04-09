@@ -147,7 +147,6 @@ export default function RegisterScreen() {
       isValueThere(email) &&
       isValueThere(password) &&
       isValueThere(confirmPassword);
-    // console.log("Has No errors: ",hasNoErrors)
     setIsFormValid(hasNoErrors);
   }, [
     name,

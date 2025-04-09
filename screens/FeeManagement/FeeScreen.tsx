@@ -326,7 +326,7 @@ const FeeManagementScreen = () => {
   // Function to print student details
   const handlePrintStudent = useCallback(async (student: Student) => {
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
 
       // Generate HTML content for PDF
       const htmlContent = `
@@ -465,9 +465,9 @@ const FeeManagementScreen = () => {
         await Sharing.shareAsync(uri);
       }
 
-      setIsLoading(false);
+      // setIsLoading(false);
     } catch (error) {
-      setIsLoading(false);
+      // setIsLoading(false);
       // console.error("Error generating PDF:", error);
       // Alert.alert("Error", "Failed to generate PDF.");
       showAlert({ title: "Error", message: "Failed to generate PDF." });
@@ -491,7 +491,7 @@ const FeeManagementScreen = () => {
       handleStudentPress,
       handleAddPayment,
       handleStudentNote,
-      handlePrintStudent,
+      // handlePrintStudent,
     ]
   );
 

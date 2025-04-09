@@ -205,7 +205,7 @@ api.interceptors.response.use(
       await AsyncStorage.removeItem("token");
     }
 
-    return Promise.reject(error);
+    return error;
   }
 );
 
